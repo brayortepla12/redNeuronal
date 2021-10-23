@@ -3,10 +3,18 @@ from tkinter import ttk
 from tkinter import filedialog
 from tkinter import messagebox
 import pandas as pd
+import random
 
 datos = 0
-numNeuronas = []
+funActivacionCapa=0
+entrenamiento=0
+
 funcActivCapa = []
+
+MatricesPesos=[]
+numNeuronas = []
+VecUmbrales=[]
+
 
 def abrir_archivo():
 	archivo = filedialog.askopenfilename(initialdir ='/',title='Selecione archivo',filetype=(('xlsx files', '*.xlsx*'),('All files', '*.*')))
@@ -58,19 +66,80 @@ def mostradatos(archivo):
 def Limpiar():
 	tabla.delete(*tabla.get_children())
 
+def funActUltimacapa():
+    funcActivCapa.append(salActivacion.get())
+    global entrenamiento
+    entrenamiento = algoEntrenamiento.get()
+    messagebox.showinfo(message="Capa salida configurada", title="Configuracion")
+
+def matrizAleatoria(filas,columnas):
+    lista2 = []
+    for i in range(0,filas):
+        lista2.append([])
+        for j in range(0,columnas):
+            lista2[i].append(round(random.uniform(-1, 1),2))
+    return lista2
+
+def vectUmbrales(filas):
+    lista2 = []
+    for i in range(0,filas):
+        lista2.append(round(random.uniform(-1, 1),2))
+    return lista2
+
+def mostrarMatriz(matriz,filas,columnas,item):
+    root = Tk()
+    root.title('Matriz de pesos: '+str(item+1))
+    Label(root, text= 'Matriz de pesos: '+str(item+1)).grid(row=0,column=0)
+    for r in range(0, filas):
+        for c in range(0, columnas):
+            cell = Entry(root, width=10)
+            cell.grid(row=r+1, column=c)
+            cell.insert(0,str(matriz[r][c]).format(r, c))
+
+
+def genGridMatrizAleatoria():
+    #generar matrices python
+    for i in range(0,len(numNeuronas)-1):
+        MatricesPesos.append(matrizAleatoria(numNeuronas[i],numNeuronas[i+1]))
+    #generar vectumbrales python
+    for i in range(1,len(numNeuronas)):
+        VecUmbrales.append(vectUmbrales(numNeuronas[i]))
+
+    for item in range(len(numNeuronas)-1):
+        mostrarMatriz(MatricesPesos[item],int(numNeuronas[item]),int(numNeuronas[item+1]),item)
+
+
 
 def confCapasOculta():
-
+    numNeuronas.append(int(labelNumEntradasRed['text']))
     def guaConfCapas():
-        numNeuronas.append(EntrynumNeuronas.get())
-        print(opcionActivacion.get())
-        #aca va el retorno del radio Button
+        numNeuronas.append(int(EntrynumNeuronas.get()))
+        funcActivCapa.append(funActivacionCapa)
+        EntrynumNeuronas.delete(0,'end')
+        messagebox.showinfo(message="Capa configuradas", title="Configuracion")
+        if len(numNeuronas) == (int(numCapas.get())+1):
+            numNeuronas.append(int(labelNumSalidasRed['text']))
+            EntrynumNeuronas['state'] = DISABLED
+            messagebox.showinfo(message="Capas ocultas configuradas", title="Configuracion de capas")
+
+    def guaFuncActivacion():
+        labelValue = Label(pantallaCapa, textvariable=opcionActivacion)
+        global funActivacionCapa
+        if int(labelValue['text']) == 1:
+            funActivacionCapa = 1
+        elif int(labelValue['text']) == 2:
+            funActivacionCapa = 2
+        elif int(labelValue['text']) == 3:
+            funActivacionCapa = 3
+
 
     dataNumNeuronas=StringVar()
     pantallaCapa= Tk()
     pantallaCapa.geometry('300x300')
-    pantallaCapa.title("Capa oculta numero ")
-    Label(pantallaCapa,text ="CONFIGURAR CAPAS ").place(x=80,y=20)
+    pantallaCapa.title("Capa oculta")
+    textt=StringVar()
+    textt.set("CONFIGURAR CAPA")
+    Label(pantallaCapa,text=textt.get()).place(x=80,y=20)
     Label(pantallaCapa,text ="Numero de neuronas ").place(x=10,y=80)
     EntrynumNeuronas=Entry(pantallaCapa,width=10,textvariable=dataNumNeuronas)
     EntrynumNeuronas.place(x=140,y=80,width=130,height=20)
@@ -78,14 +147,21 @@ def confCapasOculta():
     Label(pantallaCapa,text ="Funcion De Activacion").place(x=10,y=130)
     opcionActivacion = IntVar() # Como StrinVar pero en entero
 
-    sigmoide=Radiobutton(pantallaCapa, text="Sigmoide", variable=opcionActivacion, value=1)
+    sigmoide=Radiobutton(pantallaCapa, text="Sigmoide", variable=opcionActivacion,command=guaFuncActivacion, value=1)
     sigmoide.place(x=20,y=160)
-    gausiana=Radiobutton(pantallaCapa, text="Gausiana", variable=opcionActivacion, value=2)
+    gausiana=Radiobutton(pantallaCapa, text="Gausiana", variable=opcionActivacion,command=guaFuncActivacion, value=2)
     gausiana.place(x=20,y=180)
-    tangHiper=Radiobutton(pantallaCapa, text="Tangente Hiperbolica", variable=opcionActivacion, value=3)
+    tangHiper=Radiobutton(pantallaCapa, text="Tangente Hiperbolica", variable=opcionActivacion,command=guaFuncActivacion, value=3)
     tangHiper.place(x=20,y=200)
 
-    Button(pantallaCapa, text= 'Guardar',command=guaConfCapas).place(width=100,height=30,x=100,y=240)
+    bt=Button(pantallaCapa, text= 'Guardar',command=guaConfCapas).place(width=100,height=30,x=40,y=240)
+    Button(pantallaCapa, text= 'Salir').place(width=100,height=30,x=160,y=240)
+
+def pesosTeclado():
+    ventana= Tk()
+    ventana.geometry('300x300')
+    ventana.title("Capa oculta")
+    ventana.mainloop()
 
 raiz = Tk()
 raiz.geometry('800x500')
@@ -144,15 +220,55 @@ indica = Label(frame2, fg= 'white', bg='gray26', text= 'Ubicación Del Archivo',
 indica.place(x=8,y=40)
 
 p2=ttk.Frame(nb)
-label_frame = LabelFrame(p2, text="Capas ocultas de la red")
-label_frame.pack(fill="both")
-label_frame.place(x=10,y=40,height=110,width=280)
+
+label_frame1 = LabelFrame(p2, text="Capas ocultas de la red")
+label_frame1.pack(fill="both")
+label_frame1.place(x=30,y=40,height=110,width=280)
 
 dataNumCapas=StringVar()
-Label(label_frame,text ="Numero de capas ").place(x=10,y=20)
-numCapas=Entry(label_frame,width=10,textvariable=dataNumCapas)
+Label(label_frame1,text ="Numero de capas ").place(x=10,y=20)
+numCapas=Entry(label_frame1,width=10,textvariable=dataNumCapas)
 numCapas.place(x=120,y=20,width=130,height=20)
-Button(label_frame, text= 'Guardar',command=confCapasOculta).place(width=100,height=30,x=150,y=50)
+Button(label_frame1, text= 'Configurar',command=confCapasOculta).place(width=100,height=30,x=150,y=50)
+
+label_frame = LabelFrame(p2, text="Capa de salida")
+label_frame.pack(fill="both")
+label_frame.place(x=30,y=170,height=230,width=635)
+
+label_frame2 = LabelFrame(p2, text="Funcion De Activacion")
+label_frame2.pack(fill="both")
+label_frame2.place(x=60,y=210,height=130,width=280)
+
+salActivacion = IntVar()
+algoEntrenamiento = IntVar()
+
+salsigmoide=Radiobutton(label_frame2, text="Sigmoide", variable=salActivacion, value=1)
+salsigmoide.place(x=20,y=10)
+salgausiana=Radiobutton(label_frame2, text="Gausiana", variable=salActivacion, value=2)
+salgausiana.place(x=20,y=30)
+saltangHiper=Radiobutton(label_frame2, text="Tangente Hiperbolica", variable=salActivacion, value=3)
+saltangHiper.place(x=20,y=50)
+sallineal=Radiobutton(label_frame2, text="Lineal", variable=salActivacion, value=4)
+sallineal.place(x=20,y=70)
+
+label_frame3 = LabelFrame(p2, text="Algoritmo entrenamiento")
+label_frame3.pack(fill="both")
+label_frame3.place(x=360,y=210,height=130,width=280)
+regldelta=Radiobutton(label_frame3, text="Regla delta", variable=algoEntrenamiento, value=1)
+regldelta.place(x=20,y=10)
+regldeltaModificada=Radiobutton(label_frame3, text="Regla delta modificada", variable=algoEntrenamiento, value=2)
+regldeltaModificada.place(x=20,y=30)
+
+buttong=Button(label_frame, text= 'Guardar',command=funActUltimacapa).place(width=100,height=30,x=505,y=170)
+
+label_frame4 = LabelFrame(p2, text="Generar Pesos Y umbrales")
+label_frame4.pack(fill="both")
+label_frame4.place(x=320,y=40,height=110,width=345)
+
+botonAleatorio = Button(label_frame4, text= 'Aleatorio', command=genGridMatrizAleatoria).place(width=100,height=40,x=10,y=20)
+botonAteclado = Button(label_frame4, text= 'Por teclado',command=pesosTeclado).place(width=100,height=40,x=120,y=20)
+botonSubirPesos = Button(label_frame4, text= 'Subir Pesos').place(width=100,height=40,x=230,y=20)
+
 
 nb.add(p2,text='Configurar')
 

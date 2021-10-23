@@ -160,7 +160,7 @@ def confCapasOculta():
 def pesosTeclado():
     ventana= Tk()
     ventana.geometry('300x300')
-    ventana.title("Capa oculta")
+    ventana.title("Pesos por teclado")
     ventana.mainloop()
 
 raiz = Tk()

@@ -279,9 +279,9 @@ def Neurona(data):#NEURONA
     umbral=VecUmbrales[0]
     for i in range(0,len(peso)):
 	    for j in range(0,len(peso[i])):
-             print('peso: '+str(peso[i][j]))
-             print('entrada: '+str(data[i]))
-             print('umbral: '+str(umbral[j]))
+             print('peso: '+str(peso[j][i]))
+             print('entrada: '+str(data[j]))
+             print('umbral: '+str(umbral[i]))
              print('*****************')
     print('------------------------------------')
 

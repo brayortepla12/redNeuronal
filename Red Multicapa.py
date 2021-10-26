@@ -105,13 +105,13 @@ def mostrarMatriz(matriz,filas,columnas,item):
 def genGridMatrizAleatoria():
     #generar matrices python
     for i in range(0,len(numNeuronas)-1):
-        MatricesPesos.append(matrizAleatoria(numNeuronas[i],numNeuronas[i+1]))
+        MatricesPesos.append(matrizAleatoria(numNeuronas[i+1],numNeuronas[i]))
     #generar vectumbrales python
     for i in range(1,len(numNeuronas)):
         VecUmbrales.append(vectUmbrales(numNeuronas[i]))
 
     for item in range(len(numNeuronas)-1):
-        mostrarMatriz(MatricesPesos[item],int(numNeuronas[item]),int(numNeuronas[item+1]),item)
+        mostrarMatriz(MatricesPesos[item],int(numNeuronas[item+1]),int(numNeuronas[item]),item)
 
 
 
@@ -175,7 +175,7 @@ def pesosTeclado():
         if(len(MatricesPesos)!=(len(numNeuronas)-1)):
             if(len(listapesos)>=(numNeuronas[p]*numNeuronas[p+1])):
                 messagebox.showinfo(message="Matriz De Peso Guardado", title="Peso Capa")
-                gridMostrarPesosTeclado(numNeuronas[p],numNeuronas[p+1])
+                gridMostrarPesosTeclado(numNeuronas[p+1],numNeuronas[p])
                 p=p+1
         else:
             messagebox.showinfo(message="Todos los pesos fueron cargados", title="Pesos")
@@ -218,7 +218,7 @@ def pesosTeclado():
         else:
             messagebox.showinfo(message="Todos los umbrales fueron cargados", title="Umbrales")
             entryu['state'] = DISABLED
-
+#error generar umbrales (lista dentro de lista)
     def umbralesTeclado(filas,columnas):
         elem=0
         lista2 = []
@@ -277,13 +277,14 @@ def configuracion():
 def Neurona(data):#NEURONA
     peso=MatricesPesos[0]
     umbral=VecUmbrales[0]
+    s=0
     for i in range(0,len(peso)):
-	    for j in range(0,len(peso[i])):
-             print('peso: '+str(peso[j][i]))
-             print('entrada: '+str(data[j]))
-             print('umbral: '+str(umbral[i]))
-             print('*****************')
-    print('------------------------------------')
+        for j in range(0,len(peso[i])):
+            s=s+(float(peso[i][j])*float(data[j]))
+        print(type(umbral[i]))
+        print(umbral[i])
+        print('resultado de la funcion s:'+str(s))
+        print('*******************')
 
 def muticapa(data):
     sumErrores = np.array([])

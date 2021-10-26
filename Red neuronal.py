@@ -203,7 +203,6 @@ def algoDel_PeceptonSimple(data):
 		errorPatron=0
 		for i in range(0,filas):
 			errorLineal = []
-			print('inicio del error lineal'+str(errorLineal))
 			entradaActual=data[i,0:columnas-salidas]
 			salidaDeseada=data[i,columnas-salidas:]
 			salidaObtenida=Neurona(entradaActual,matrizPeso)

@@ -3,6 +3,7 @@ from tkinter import ttk
 from tkinter import filedialog
 from tkinter import messagebox
 import pandas as pd
+import numpy as np
 import random
 
 datos = 0
@@ -14,6 +15,10 @@ funcActivCapa = []
 MatricesPesos=[]
 numNeuronas = []
 VecUmbrales=[]
+
+rataAprendizaje=0
+errMaxPermitido=0
+numIteraciones=0
 
 
 def abrir_archivo():
@@ -121,6 +126,8 @@ def confCapasOculta():
             numNeuronas.append(int(labelNumSalidasRed['text']))
             EntrynumNeuronas['state'] = DISABLED
             messagebox.showinfo(message="Capas ocultas configuradas", title="Configuracion de capas")
+            numCapas.delete(0,'end')
+            
 
     def guaFuncActivacion():
         labelValue = Label(pantallaCapa, textvariable=opcionActivacion)
@@ -157,11 +164,145 @@ def confCapasOculta():
     bt=Button(pantallaCapa, text= 'Guardar',command=guaConfCapas).place(width=100,height=30,x=40,y=240)
     Button(pantallaCapa, text= 'Salir').place(width=100,height=30,x=160,y=240)
 
-def pesosTeclado():
-    ventana= Tk()
-    ventana.geometry('300x300')
-    ventana.title("Pesos por teclado")
-    ventana.mainloop()
+p=0
+u=0
+def pesosTeclado(): 
+    listapesos=[]
+    def almacenarPeso():
+        global p
+        listapesos.append(entryp.get())
+        entryp.delete(0,'end')
+        if(len(MatricesPesos)!=(len(numNeuronas)-1)):
+            if(len(listapesos)>=(numNeuronas[p]*numNeuronas[p+1])):
+                messagebox.showinfo(message="Matriz De Peso Guardado", title="Peso Capa")
+                gridMostrarPesosTeclado(numNeuronas[p],numNeuronas[p+1])
+                p=p+1
+        else:
+            messagebox.showinfo(message="Todos los pesos fueron cargados", title="Pesos")
+            entryp['state'] = DISABLED
+
+    def pesosmatrizTeclado(filas,columnas):
+        elem=0
+        lista2 = []
+        for i in range(0,filas):
+            lista2.append([])
+            for j in range(0,columnas):
+                lista2[i].append(listapesos[elem])
+                elem=elem+1
+        MatricesPesos.append(lista2)
+        return lista2
+
+    def gridMostrarPesosTeclado(filas,columnas):
+        lista2 = pesosmatrizTeclado(filas,columnas)
+        root = Tk()
+        for r in range(0, filas):
+            for c in range(0, columnas):
+                cell = Entry(root,width=10)
+                cell.grid(padx=5, pady=5, row=r, column=c)
+                cell.insert(0, str(lista2[r][c]).format(r, c))
+        but = ttk.Button(root, text="salir")
+        but.grid(column=0,row=r+1,padx=5,pady=10)
+        del listapesos[:]
+    
+    #umbrales por teclado
+    listaumbrales=[]
+    def umbrales():
+        global u
+        listaumbrales.append(entryu.get())
+        entryu.delete(0,'end')
+        if(len(VecUmbrales)!=(len(numNeuronas)-1)):
+            if(len(listaumbrales)>=(numNeuronas[u+1])):
+                messagebox.showinfo(message="Umbral guardado", title="Umbrales")
+                gridMostrarUmbrlTeclado(numNeuronas[u+1],1)
+                u=u+1
+        else:
+            messagebox.showinfo(message="Todos los umbrales fueron cargados", title="Umbrales")
+            entryu['state'] = DISABLED
+
+    def umbralesTeclado(filas,columnas):
+        elem=0
+        lista2 = []
+        for i in range(0,filas):
+            lista2.append([])
+            for j in range(0,columnas):
+                lista2[i].append(listaumbrales[elem])
+                elem=elem+1
+        VecUmbrales.append(lista2)
+        return lista2  
+
+    def gridMostrarUmbrlTeclado(filas,columnas):
+        lista2 = umbralesTeclado(filas,columnas)
+        root = Tk()
+        for r in range(0, filas):
+            for c in range(0, columnas):
+                cell = Entry(root,width=10)
+                cell.grid(padx=5, pady=5, row=r, column=c)
+                cell.insert(0, str(lista2[r][c]).format(r, c))
+        but = ttk.Button(root, text="salir")
+        but.grid(column=0,row=r+1,padx=5,pady=10)
+        del listaumbrales[:]
+
+    root = Tk()
+    root.geometry('350x250')
+    root.title('Pesos y umbrales')
+    frameP = LabelFrame(root, text="Pesos sinapticos")
+    frameP.pack(fill="both")
+    frameP.place(x=30,y=20,height=100,width=290)
+
+    Label(frameP,text='Ingresar Peso: ').place(x=20,y=10)
+    entryp=Entry(frameP,width=10,)
+    entryp.place(x=130,y=10,width=130,height=20)
+    Button(frameP,text='Guardar',command=almacenarPeso).place(x=170,y=40,width=90,height=30)
+
+    frameU = LabelFrame(root, text="Umbrales")
+    frameU.pack(fill="both")
+    frameU.place(x=30,y=140,height=100,width=290)
+
+    Label(frameU,text='Ingresar Umbral: ').place(x=20,y=10)
+    entryu=Entry(frameU,width=10,)
+    entryu.place(x=130,y=10,width=130,height=20)
+    Button(frameU,text='Guardar',command=umbrales).place(x=170,y=40,width=90,height=30)
+
+def configuracion():
+	ra=entryrataAprendizaje.get()
+	emp=entryerrMaxPermitido.get()
+	ni=entrynumIteraciones.get()
+
+	global rataAprendizaje,errMaxPermitido,numIteraciones
+	rataAprendizaje = ra
+	errMaxPermitido = emp
+	numIteraciones = ni
+	messagebox.showinfo(message="Cofiguracion Guardada Correctamente", title="Configuracion")
+
+def Neurona(data):#NEURONA
+    peso=MatricesPesos[0]
+    umbral=VecUmbrales[0]
+    for i in range(0,len(peso)):
+	    for j in range(0,len(peso[i])):
+             print('peso: '+str(peso[i][j]))
+             print('entrada: '+str(data[i]))
+             print('umbral: '+str(umbral[j]))
+             print('*****************')
+    print('------------------------------------')
+
+def muticapa(data):
+    sumErrores = np.array([])
+    filas = data.shape[0]
+    columnas = data.shape[1]
+    for itm in range(0,int(numIteraciones)):
+        errorIteracion = []
+        errorPatron=0
+        for i in range(0,filas):
+            errorLineal = []
+            entradaActual=data[i,0:columnas-salidas]
+            salidaDeseada=data[i,columnas-salidas:]
+            #salidaObtenida=Neurona(entradaActual)
+            Neurona(entradaActual)
+
+            
+def entrenar():
+    data=datos.to_numpy()
+    muticapa(data)
 
 raiz = Tk()
 raiz.geometry('800x500')
@@ -269,7 +410,32 @@ botonAleatorio = Button(label_frame4, text= 'Aleatorio', command=genGridMatrizAl
 botonAteclado = Button(label_frame4, text= 'Por teclado',command=pesosTeclado).place(width=100,height=40,x=120,y=20)
 botonSubirPesos = Button(label_frame4, text= 'Subir Pesos').place(width=100,height=40,x=230,y=20)
 
-
 nb.add(p2,text='Configurar')
+
+p3=ttk.Frame(nb)
+
+label_frame2 = LabelFrame(p3)
+label_frame2.pack(fill="both")
+label_frame2.place(x=30,y=30,height=190,width=340)
+
+rataAprendizaje = StringVar()
+errMaxPermitido = StringVar()
+numIteraciones = StringVar()
+
+Label(p3,text ="Rata De Aprendizaje : ").place(x=50,y=40)
+entryrataAprendizaje=Entry(p3,width=10,textvariable=rataAprendizaje)
+entryrataAprendizaje.place(x=210,y=40,width=130,height=20)
+
+Label(p3,text ="Erorr Maximo Permitido : ").place(x=50,y=80)
+entryerrMaxPermitido=Entry(p3,width=10,textvariable=errMaxPermitido)
+entryerrMaxPermitido.place(x=210,y=80,width=130,height=20)
+
+Label(p3,text ="Numero De Iteraciones : ").place(x=50,y=120)
+entrynumIteraciones=Entry(p3,width=10,textvariable=numIteraciones)
+entrynumIteraciones.place(x=210,y=120,width=130,height=20)
+
+Button(p3, text= 'Guardar',command=configuracion).place(width=180,height=40,x=100,y=165)
+Button(p3, text= 'Entrenar',command=entrenar).place(width=180,height=40,x=440,y=95)
+nb.add(p3,text='Entrenar')
 
 raiz.mainloop()

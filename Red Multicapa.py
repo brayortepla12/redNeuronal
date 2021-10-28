@@ -4,6 +4,7 @@ from tkinter import filedialog
 from tkinter import messagebox
 import pandas as pd
 import numpy as np
+import math
 import random
 
 datos = 0
@@ -86,9 +87,13 @@ def matrizAleatoria(filas,columnas):
     return lista2
 
 def vectUmbrales(filas):
+    elem=0
     lista2 = []
     for i in range(0,filas):
-        lista2.append(round(random.uniform(-1, 1),2))
+        lista2.append([])
+        for j in range(0,1):
+            lista2[i].append(round(random.uniform(-1, 1),2))
+            elem=elem+1
     return lista2
 
 def mostrarMatriz(matriz,filas,columnas,item):
@@ -127,7 +132,7 @@ def confCapasOculta():
             EntrynumNeuronas['state'] = DISABLED
             messagebox.showinfo(message="Capas ocultas configuradas", title="Configuracion de capas")
             numCapas.delete(0,'end')
-            
+
 
     def guaFuncActivacion():
         labelValue = Label(pantallaCapa, textvariable=opcionActivacion)
@@ -166,11 +171,11 @@ def confCapasOculta():
 
 p=0
 u=0
-def pesosTeclado(): 
+def pesosTeclado():
     listapesos=[]
     def almacenarPeso():
         global p
-        listapesos.append(entryp.get())
+        listapesos.append(float(entryp.get()))
         entryp.delete(0,'end')
         if(len(MatricesPesos)!=(len(numNeuronas)-1)):
             if(len(listapesos)>=(numNeuronas[p]*numNeuronas[p+1])):
@@ -203,12 +208,12 @@ def pesosTeclado():
         but = ttk.Button(root, text="salir")
         but.grid(column=0,row=r+1,padx=5,pady=10)
         del listapesos[:]
-    
+
     #umbrales por teclado
     listaumbrales=[]
     def umbrales():
         global u
-        listaumbrales.append(entryu.get())
+        listaumbrales.append(float(entryu.get()))
         entryu.delete(0,'end')
         if(len(VecUmbrales)!=(len(numNeuronas)-1)):
             if(len(listaumbrales)>=(numNeuronas[u+1])):
@@ -224,11 +229,11 @@ def pesosTeclado():
         lista2 = []
         for i in range(0,filas):
             lista2.append([])
-            for j in range(0,columnas):
+            for j in range(0,1):
                 lista2[i].append(listaumbrales[elem])
                 elem=elem+1
         VecUmbrales.append(lista2)
-        return lista2  
+        return lista2
 
     def gridMostrarUmbrlTeclado(filas,columnas):
         lista2 = umbralesTeclado(filas,columnas)
@@ -264,7 +269,7 @@ def pesosTeclado():
     Button(frameU,text='Guardar',command=umbrales).place(x=170,y=40,width=90,height=30)
 
 def configuracion():
-	ra=entryrataAprendizaje.get()
+	ra=float(entryrataAprendizaje.get())
 	emp=entryerrMaxPermitido.get()
 	ni=entrynumIteraciones.get()
 
@@ -274,17 +279,41 @@ def configuracion():
 	numIteraciones = ni
 	messagebox.showinfo(message="Cofiguracion Guardada Correctamente", title="Configuracion")
 
+def truncate(num, n):
+    integer = int(num * (10**n))/(10**n)
+    return float(integer)
+
 def Neurona(data):#NEURONA
-    peso=MatricesPesos[0]
-    umbral=VecUmbrales[0]
-    s=0
-    for i in range(0,len(peso)):
-        for j in range(0,len(peso[i])):
-            s=s+(float(peso[i][j])*float(data[j]))
-        print(type(umbral[i]))
-        print(umbral[i])
-        print('resultado de la funcion s:'+str(s))
-        print('*******************')
+    #peso=MatricesPesos[0]
+    #umbral=VecUmbrales[0]
+    m=0
+    conjuntosSalidas=[]
+    l=[]
+
+    for element in data:
+        l.append(element)
+    conjuntosSalidas.append(l)
+
+    for matriz in MatricesPesos:
+        listSalidas=[]
+        m=m+1
+        for i in range(0,len(matriz)):
+            s=0
+            for j in range(0,len(matriz[0])):
+                #print('funcion s: '+str(matriz[i][j])+'*'+str(data[j]))
+                s=s+((matriz[i][j])*(float(data[j])))
+            #print('Umbral: '+str(VecUmbrales[m-1][i][0]))
+            s=s-VecUmbrales[m-1][i][0]
+
+            if(funcActivCapa[0]==3):
+                salidaNeurona = truncate(math.tanh(s),2)
+
+            listSalidas.append(salidaNeurona)
+        #print('*************')
+        conjuntosSalidas.append(listSalidas)
+        data=listSalidas
+        print('list salidas: '+str(listSalidas))
+    return conjuntosSalidas
 
 def muticapa(data):
     sumErrores = np.array([])
@@ -297,10 +326,46 @@ def muticapa(data):
             errorLineal = []
             entradaActual=data[i,0:columnas-salidas]
             salidaDeseada=data[i,columnas-salidas:]
-            #salidaObtenida=Neurona(entradaActual)
-            Neurona(entradaActual)
+            salidaObtenida=Neurona(entradaActual)
+            #Neurona(entradaActual)
+            print(salidaObtenida)
 
-            
+            for elemento in range(0,salidas):
+                errorLineal.append(abs(salidaDeseada[elemento] - salidaObtenida[len(salidaObtenida)-1][elemento]))
+            errorPatron = sum(errorLineal)/salidas
+            print('error patron: '+str(errorPatron))
+            errorIteracion.append(errorPatron)
+            numMatriz=0
+
+            banderaentradas=0
+            for matriz in MatricesPesos:
+                print('MATRIZ PESO INICIAL: '+str(matriz))
+                for i in range(0,len(matriz)):
+                    for j in range(0,len(matriz[0])):
+                        if(numMatriz == len(MatricesPesos)):
+                            matriz[i][j]=truncate(matriz[i][j]+(rataAprendizaje*errorLineal[i]*salidaObtenida[banderaentradas][j]),3)
+                        else:
+                            matriz[i][j]=truncate(matriz[i][j]+(rataAprendizaje*errorPatron*salidaObtenida[banderaentradas][j]),3)
+                print('MATRIZ PESO ACTUALIZADA: '+str(matriz))
+                print('++++++++++++++++++++')
+                banderaentradas=+1
+
+            print('______________________________________________________________\n')
+
+            numMatriz=0
+            for umbral in VecUmbrales:
+                print('MATRIZ UMBRAL INICIAL: '+str(umbral))
+                numMatriz=numMatriz+1
+                for i in range(0,1):
+                    for j in range(0,len(umbral)):
+                        if(numMatriz == len(VecUmbrales)):
+                            umbral[j][i]=truncate(umbral[j][i]+(rataAprendizaje*errorLineal[j]*1),3)
+                        else:
+                            umbral[j][i]=truncate(umbral[j][i]+(rataAprendizaje*errorPatron*1),3)
+                print('MATRIZ UMBRAL ACTUALIZADA: '+str(umbral))
+                print('++++++++++++++++++++')
+
+
 def entrenar():
     data=datos.to_numpy()
     muticapa(data)

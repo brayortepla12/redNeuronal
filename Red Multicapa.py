@@ -284,6 +284,14 @@ def truncate(num, n):
     integer = int(num * (10**n))/(10**n)
     return float(integer)
 
+def sigmoid(x):
+    z = np.exp(-x)
+    sig = 1 / (1 + z)
+    return sig
+
+def lineal(z):
+    return np.maximum(0, z)
+
 def Neurona(data):#NEURONA
     #peso=MatricesPesos[0]
     #umbral=VecUmbrales[0]
@@ -294,7 +302,7 @@ def Neurona(data):#NEURONA
     for element in data:
         l.append(element)
     conjuntosSalidas.append(l)
-
+    bandFuncAct=0
     for matriz in MatricesPesos:
         listSalidas=[]
         m=m+1
@@ -304,11 +312,23 @@ def Neurona(data):#NEURONA
                 s=s+((matriz[i][j])*(float(data[j])))
             s=s-VecUmbrales[m-1][i][0]
 
+            if(funcActivCapa[bandFuncAct]==3):
+                #salidaNeurona = truncate(math.tanh(s),5)
+                salidaNeurona = math.tanh(s)
+                print('tang Hipervolica')
+            elif(funcActivCapa[bandFuncAct]==1):
+                salidaNeurona = sigmoid(s)
+                print('sigmoide')
+            elif(funcActivCapa[bandFuncAct]==2):
+                salidaNeurona = math.tanh(s)
+                print('gaussiana')
+            elif(funcActivCapa[bandFuncAct]==4):
+                salidaNeurona = lineal(s)
+                print('lineal')
 
-            if(funcActivCapa[0]==3):
-                salidaNeurona = truncate(math.tanh(s),5)
 
             listSalidas.append(salidaNeurona)
+        bandFuncAct+=1
         conjuntosSalidas.append(listSalidas)
         data=listSalidas
         #print('list salidas: '+str(listSalidas))
@@ -328,12 +348,13 @@ def muticapa(data):
             salidaDeseada=data[i,columnas-salidas:]
             salidaObtenida=Neurona(entradaActual)
             sumerrLineal=0
+
             for elemento in range(0,salidas):
                 errorLineal.append(salidaDeseada[elemento] - salidaObtenida[len(salidaObtenida)-1][elemento])
                 sumerrLineal=sumerrLineal+abs(errorLineal[elemento])
 
             errorPatron = sumerrLineal/salidas
-            print(errorPatron)
+            #print('error de patron: '+str(errorPatron))
             errorIteracion.append(errorPatron)
             numMatriz=0
 
@@ -345,10 +366,12 @@ def muticapa(data):
                 for i in range(0,len(matriz)):
                     for j in range(0,len(matriz[0])):
                         if(numMatriz == len(MatricesPesos)):
-                            matriz[i][j]=truncate(matriz[i][j]+(rataAprendizaje*errorLineal[i]*salidaObtenida[banderaentradas][j]),3)
+                            #matriz[i][j]=truncate(matriz[i][j]+(rataAprendizaje*errorLineal[i]*salidaObtenida[banderaentradas][j]),3)
+                            matriz[i][j]=matriz[i][j]+(rataAprendizaje*errorLineal[i]*salidaObtenida[banderaentradas][j])
                             #print('error lineal: '+str(errorLineal[i]))
                         else:
-                            matriz[i][j]=truncate(matriz[i][j]+(rataAprendizaje*errorPatron*salidaObtenida[banderaentradas][j]),3)
+                            #matriz[i][j]=truncate(matriz[i][j]+(rataAprendizaje*errorPatron*salidaObtenida[banderaentradas][j]),3)
+                            matriz[i][j]=matriz[i][j]+(rataAprendizaje*errorPatron*salidaObtenida[banderaentradas][j])
                             '''print('valor matriz: '+str(matriz[i][j]))
                             print('error patron: '+str(errorPatron))
                             print('salida: '+str(salidaObtenida[banderaentradas][j]))'''
@@ -363,15 +386,17 @@ def muticapa(data):
                 for i in range(0,1):
                     for j in range(0,len(umbral)):
                         if(numMatriz == len(VecUmbrales)):
-                            umbral[j][i]=truncate(umbral[j][i]+(rataAprendizaje*errorLineal[j]*1),3)
+                            #umbral[j][i]=truncate(umbral[j][i]+(rataAprendizaje*errorLineal[j]*1),3)
+                            umbral[j][i]=umbral[j][i]+(rataAprendizaje*errorLineal[j]*1)
                             #print('error lineal: '+str(errorLineal[j]))
                         else:
-                            umbral[j][i]=truncate(umbral[j][i]+(rataAprendizaje*errorPatron*1),3)
+                            #umbral[j][i]=truncate(umbral[j][i]+(rataAprendizaje*errorPatron*1),3)
+                            umbral[j][i]=umbral[j][i]+(rataAprendizaje*errorPatron*1)
                 #print('Matriz umbral Actualizado: '+str(umbral))
-        print('**********')
+        '''print('**********')
         print('error iteracion: '+str(sum(errorIteracion)))
         print('num de patrones: '+str(filas))
-        print('erms: '+str((sum(errorIteracion)/filas)))
+        print('erms: '+str((sum(errorIteracion)/filas)))'''
 
         sumErrores = np.append(sumErrores,sum(errorIteracion)/filas)
 

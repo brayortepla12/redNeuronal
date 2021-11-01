@@ -2,3 +2,5 @@
 *.pdf
 pesos aleatorios.py
 umbralesteclado.py
+Red_RBF.py
+datosRBF.xlsx

@@ -6,6 +6,7 @@ import pandas as pd
 import numpy as np
 import math
 import random
+import pickle
 import matplotlib.pyplot as plt
 
 datos = 0
@@ -24,54 +25,102 @@ numIteraciones=0
 
 
 def abrir_archivo():
-	archivo = filedialog.askopenfilename(initialdir ='/',title='Selecione archivo',filetype=(('xlsx files', '*.xlsx*'),('All files', '*.*')))
-	indica['text'] = archivo
-	return archivo
+    archivo = filedialog.askopenfilename(initialdir ='/',title='Selecione archivo',filetype=(('xlsx files', '*.xlsx*'),('All files', '*.*')))
+    indica['text'] = archivo
+    return archivo
+
+def abrir_archivo2():
+    archivo = filedialog.askopenfilename(initialdir ='/',title='Selecione archivo',filetype=(('xlsx files', '*.xlsx*'),('All files', '*.*')))
+    indica2['text'] = archivo
+    return archivo
 
 
 def datos_excel():
-	datos_obtenidos = indica['text']
-	try:
-		archivoexcel = r'{}'.format(datos_obtenidos)
-		df = pd.read_excel(archivoexcel)
-		global datos
-		datos = df
-		mostradatos(df)
-	except ValueError:
-		messagebox.showerror('Informacion', 'Formato incorrecto')
-		return None
-	except FileNotFoundError:
-		messagebox.showerror('Informacion', 'El archivo esta \n malogrado')
-		return None
-	Limpiar()
-	tabla['column'] = list(df.columns)
-	tabla['show'] = "headings"  #encabezado
+    datos_obtenidos = indica['text']
+    try:
+        archivoexcel = r'{}'.format(datos_obtenidos)
+        df = pd.read_excel(archivoexcel)
+        global datos
+        datos = df
+        mostradatos(df)
+    except ValueError:
+        messagebox.showerror('Informacion', 'Formato incorrecto')
+        return None
+    except FileNotFoundError:
+        messagebox.showerror('Informacion', 'El archivo esta \n malogrado')
+        return None
+    Limpiar()
+    tabla['column'] = list(df.columns)
+    tabla['show'] = "headings"  #encabezado
 
-	for columna in tabla['column']:
-		tabla.heading(columna, text= columna)
-		tabla.column(columna,width=115,anchor=CENTER)
-	df_fila = df.to_numpy().tolist()
+    for columna in tabla['column']:
+        tabla.heading(columna, text= columna)
+        tabla.column(columna,width=115,anchor=CENTER)
+    df_fila = df.to_numpy().tolist()
 
-	for fila in df_fila:
-		tabla.insert('', 'end', values =fila)
+    for fila in df_fila:
+        tabla.insert('', 'end', values =fila)
+
+def datos_excel2():
+    datos_obtenidos = indica2['text']
+    try:
+        archivoexcel = r'{}'.format(datos_obtenidos)
+        df = pd.read_excel(archivoexcel)
+        global datos
+        datos = df
+        mostradatos(df)
+    except ValueError:
+        messagebox.showerror('Informacion', 'Formato incorrecto')
+        return None
+    except FileNotFoundError:
+        messagebox.showerror('Informacion', 'El archivo esta \n malogrado')
+        return None
+    Limpiar()
+    tabla2['column'] = list(df.columns)
+    tabla2['show'] = "headings"  #encabezado
+
+    for columna in tabla2['column']:
+        tabla2.heading(columna, text= columna)
+        tabla2.column(columna,width=115,anchor=CENTER)
+    df_fila = df.to_numpy().tolist()
+
+    for fila in df_fila:
+        tabla2.insert('', 'end', values =fila)
+
+def subir_pesos():
+    messagebox.showinfo(message="Pesos cargados Correctamente", title="Pesos Sinapticos")
+
+    with open("pesosOptimos.pkl", "rb") as f:
+        pesosCargados=(pickle.load(f))
+
+    with open("Umbrales.pkl", "rb") as f:
+        umbalesCargados=(pickle.load(f))
+
+    print(pesosCargados)
+    print('***********')
+    print(umbalesCargados)
+
+    global MatricesPesos,VecUmbrales
+    MatricesPesos=pesosCargados
+    VecUmbrales=umbalesCargados
 
 def mostradatos(archivo):
-	entradasred=0
-	salidasred=0
-	for element in archivo.columns:
-		if 'x' in element or 'X' in element :
-			entradasred=entradasred+1
-		else:
-			salidasred=salidasred+1
-	labelNumEntradasRed['text']=entradasred
-	labelNumSalidasRed['text']=salidasred
-	labelNumPatronesRed['text']=len(archivo)
-	global entradas,salidas
-	entradas = entradasred
-	salidas = salidasred
+    entradasred=0
+    salidasred=0
+    for element in archivo.columns:
+        if 'x' in element or 'X' in element :
+            entradasred=entradasred+1
+        else:
+            salidasred=salidasred+1
+    labelNumEntradasRed['text']=entradasred
+    labelNumSalidasRed['text']=salidasred
+    labelNumPatronesRed['text']=len(archivo)
+    global entradas,salidas
+    entradas = entradasred
+    salidas = salidasred
 
 def Limpiar():
-	tabla.delete(*tabla.get_children())
+    tabla.delete(*tabla.get_children())
 
 def funActUltimacapa():
     funcActivCapa.append(salActivacion.get())
@@ -270,15 +319,15 @@ def pesosTeclado():
     Button(frameU,text='Guardar',command=umbrales).place(x=170,y=40,width=90,height=30)
 
 def configuracion():
-	ra=float(entryrataAprendizaje.get())
-	emp=entryerrMaxPermitido.get()
-	ni=entrynumIteraciones.get()
+    ra=float(entryrataAprendizaje.get())
+    emp=entryerrMaxPermitido.get()
+    ni=entrynumIteraciones.get()
 
-	global rataAprendizaje,errMaxPermitido,numIteraciones
-	rataAprendizaje = ra
-	errMaxPermitido = emp
-	numIteraciones = ni
-	messagebox.showinfo(message="Cofiguracion Guardada Correctamente", title="Configuracion")
+    global rataAprendizaje,errMaxPermitido,numIteraciones
+    rataAprendizaje = ra
+    errMaxPermitido = emp
+    numIteraciones = ni
+    messagebox.showinfo(message="Cofiguracion Guardada Correctamente", title="Configuracion")
 
 def truncate(num, n):
     integer = int(num * (10**n))/(10**n)
@@ -315,16 +364,16 @@ def Neurona(data):#NEURONA
             if(funcActivCapa[bandFuncAct]==3):
                 #salidaNeurona = truncate(math.tanh(s),5)
                 salidaNeurona = math.tanh(s)
-                print('tang Hipervolica')
+                #print('tang Hipervolica')
             elif(funcActivCapa[bandFuncAct]==1):
                 salidaNeurona = sigmoid(s)
-                print('sigmoide')
+                #print('sigmoide')
             elif(funcActivCapa[bandFuncAct]==2):
                 salidaNeurona = math.tanh(s)
-                print('gaussiana')
+                #print('gaussiana')
             elif(funcActivCapa[bandFuncAct]==4):
                 salidaNeurona = lineal(s)
-                print('lineal')
+                #print('lineal')
 
 
             listSalidas.append(salidaNeurona)
@@ -358,7 +407,6 @@ def muticapa(data):
             errorIteracion.append(errorPatron)
             numMatriz=0
 
-
             banderaentradas=0
             for matriz in MatricesPesos:
                 numMatriz=numMatriz+1
@@ -386,12 +434,12 @@ def muticapa(data):
                 for i in range(0,1):
                     for j in range(0,len(umbral)):
                         if(numMatriz == len(VecUmbrales)):
-                            #umbral[j][i]=truncate(umbral[j][i]+(rataAprendizaje*errorLineal[j]*1),3)
-                            umbral[j][i]=umbral[j][i]+(rataAprendizaje*errorLineal[j]*1)
+                            umbral[j][i]=truncate(umbral[j][i]+(rataAprendizaje*errorLineal[j]*1),3)
+                            #umbral[j][i]=umbral[j][i]+(rataAprendizaje*errorLineal[j]*1)
                             #print('error lineal: '+str(errorLineal[j]))
                         else:
-                            #umbral[j][i]=truncate(umbral[j][i]+(rataAprendizaje*errorPatron*1),3)
-                            umbral[j][i]=umbral[j][i]+(rataAprendizaje*errorPatron*1)
+                            umbral[j][i]=truncate(umbral[j][i]+(rataAprendizaje*errorPatron*1),3)
+                            #umbral[j][i]=umbral[j][i]+(rataAprendizaje*errorPatron*1)
                 #print('Matriz umbral Actualizado: '+str(umbral))
         '''print('**********')
         print('error iteracion: '+str(sum(errorIteracion)))
@@ -402,12 +450,22 @@ def muticapa(data):
 
         if(sum(errorIteracion)/filas<=float(errMaxPermitido)):
             print('red entrenada: '+' el error erms '+str(sum(errorIteracion)/filas)+' es menor o igual a el error maximo permitido '+str(errMaxPermitido))
+
+            with open("pesosOptimos.pkl", "wb") as f:
+                pickle.dump(MatricesPesos, f)
+
+            with open("Umbrales.pkl", "wb") as f:
+                pickle.dump(VecUmbrales, f)
+
+            with open("FuncActivaciones.pkl", "wb") as f:
+                pickle.dump(funcActivCapa, f)
+
             break
 
     figura = plt.figure()
     plt.title(u'Error por Iteración')
     plt.xlabel('Patrones')
-    plt.ylabel(u'Error Lineal')
+    plt.ylabel(u'Error ERMS')
     plt.plot(range(1,sumErrores.shape[0]+1),sumErrores,'bo-')
     plt.grid(True)
     plt.xticks(range(1,sumErrores.shape[0]+1))
@@ -417,6 +475,48 @@ def muticapa(data):
 def entrenar():
     data=datos.to_numpy()
     muticapa(data)
+
+def simular():
+    with open("FuncActivaciones.pkl", "rb") as f:
+        obj = pickle.load(f)
+
+    global funcActivCapa
+    funcActivCapa = obj
+    evalSalidas = []
+    data=datos.to_numpy()
+    filas = data.shape[0]
+    columnas = data.shape[1]
+    for i in range(0,filas):
+        errorLineal = []
+        entradaActual=data[i,0:columnas-salidas]
+        salidaDeseada=data[i,columnas-salidas:]
+        salidaObtenida=Neurona(entradaActual)
+
+        for elemnto in salidaObtenida[len(salidaObtenida)-1]:
+            evalSalidas.append(round(elemnto))
+
+        if set(salidaDeseada) == set(evalSalidas):
+            messagebox.showerror('Informacion', 'Patron Aprendido')
+            plt.title(u'salida deseada V/S salida obtenida')
+            plt.xlabel('Numero de salidas')
+            plt.ylabel(u'Salidas')
+            x2 = salidaDeseada
+            x3 = evalSalidas
+            plt.plot(x2, 'rd', x3, 'g^')
+            plt.show()
+        else:
+            messagebox.showerror('Informacion', 'La red no conoce este patron')
+            plt.title(u'salida deseada V/S salida obtenida')
+            plt.xlabel('Numero de salidas')
+            plt.ylabel(u'Salidas')
+            x2 = salidaDeseada
+            x3 = evalSalidas
+            plt.plot(x2, 'rd', x3, 'g^')
+            plt.show()
+            print(evalSalidas)
+            muticapa(data)
+
+
 
 raiz = Tk()
 raiz.geometry('800x500')
@@ -522,7 +622,7 @@ label_frame4.place(x=320,y=40,height=110,width=345)
 
 botonAleatorio = Button(label_frame4, text= 'Aleatorio', command=genGridMatrizAleatoria).place(width=100,height=40,x=10,y=20)
 botonAteclado = Button(label_frame4, text= 'Por teclado',command=pesosTeclado).place(width=100,height=40,x=120,y=20)
-botonSubirPesos = Button(label_frame4, text= 'Subir Pesos').place(width=100,height=40,x=230,y=20)
+botonSubirPesos = Button(label_frame4, text= 'Subir Pesos',command=subir_pesos).place(width=100,height=40,x=230,y=20)
 
 nb.add(p2,text='Configurar')
 
@@ -550,6 +650,43 @@ entrynumIteraciones.place(x=210,y=120,width=130,height=20)
 
 Button(p3, text= 'Guardar',command=configuracion).place(width=180,height=40,x=100,y=165)
 Button(p3, text= 'Entrenar',command=entrenar).place(width=180,height=40,x=440,y=95)
+
+
 nb.add(p3,text='Entrenar')
+
+p4=ttk.Frame(nb)
+frame5 = Frame(p4, bg='gray26')
+frame5.place(x=50, y=30, width=590, height=180)
+frame6 = Frame(p4, bg='gray26')
+frame6.place(x=50,y=220,width=590,height=70)
+
+tabla2 = ttk.Treeview(frame5 , height=7)
+tabla2.place(x=0, y=0, width=590)
+
+ladox = Scrollbar(frame5, orient = HORIZONTAL, command= tabla.xview)
+ladox.place(x=0,y=163,width=575)
+ladoy = Scrollbar(frame5, orient =VERTICAL, command = tabla.yview)
+ladoy.place(x=573,y=0,height=180)
+tabla2.configure(yscrollcommand = ladoy.set,xscrollcommand = ladox.set)
+
+boto1 = Button(frame6, text= 'Abrir',command = abrir_archivo2)
+boto1.grid(column = 0, row = 0, sticky='nsew', padx=10, pady=10)
+boto1.configure(width=20,height=1)
+
+boto2 = Button(frame6, text= 'Mostrar',command= datos_excel2)
+boto2.grid(column = 1, row = 0, sticky='nsew', padx=10, pady=10)
+boto2.configure(width=20,height=1)
+
+boto3 = Button(frame6, text= 'Limpiar',command= Limpiar)
+boto3.grid(column = 2, row = 0, sticky='nsew', padx=10, pady=10)
+boto3.configure(width=20,height=1)
+
+indica2 = Label(frame6, fg= 'white', bg='gray26', text= 'Ubicación Del Archivo', font= ('Arial',8,'bold') )
+indica2.place(x=8,y=40)
+
+Button(p4, text= 'Simular patron',command=simular).place(width=100,height=40,x=50,y=310)
+
+
+nb.add(p4,text='Simular')
 
 raiz.mainloop()

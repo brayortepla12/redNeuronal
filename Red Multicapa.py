@@ -23,6 +23,21 @@ rataAprendizaje=0
 errMaxPermitido=0
 numIteraciones=0
 
+def reinicializarRed():
+    global MatricesPesos,rataAprendizaje,errMaxPermitido,numIteraciones,VecUmbrales,funActivacionCapa,funcActivCapa,entrenamiento,numNeuronas
+    numNeuronas=[]
+    entrenamiento=0
+    funActivacionCapa=0
+    funcActivCapa=[]
+    MatricesPesos=[]
+    VecUmbrales=[]
+    rataAprendizaje=0
+    errMaxPermitido=0
+    numIteraciones=0
+
+    entryrataAprendizaje.delete(0,'end')
+    entryerrMaxPermitido.delete(0,'end')
+    entrynumIteraciones.delete(0,'end')
 
 def abrir_archivo():
     archivo = filedialog.askopenfilename(initialdir ='/',title='Selecione archivo',filetype=(('xlsx files', '*.xlsx*'),('All files', '*.*')))
@@ -167,7 +182,6 @@ def genGridMatrizAleatoria():
 
     for item in range(len(numNeuronas)-1):
         mostrarMatriz(MatricesPesos[item],int(numNeuronas[item+1]),int(numNeuronas[item]),item)
-
 
 
 def confCapasOculta():
@@ -387,6 +401,7 @@ def muticapa(data):
     sumErrores = np.array([])
     filas = data.shape[0]
     columnas = data.shape[1]
+    encontrado=False
 
     for itm in range(0,int(numIteraciones)):
         errorIteracion = []
@@ -459,7 +474,7 @@ def muticapa(data):
 
             with open("FuncActivaciones.pkl", "wb") as f:
                 pickle.dump(funcActivCapa, f)
-
+            encontrado=True
             break
 
     figura = plt.figure()
@@ -470,6 +485,12 @@ def muticapa(data):
     plt.grid(True)
     plt.xticks(range(1,sumErrores.shape[0]+1))
     plt.show()
+
+    if(encontrado!=True):
+        resultado = messagebox.askretrycancel("Reintentar","No se entreno\nDesea reinicializar la red ?")
+        if resultado == True:
+            reinicializarRed()
+            print('reiniciar')
 
 
 def entrenar():
@@ -496,7 +517,7 @@ def simular():
             evalSalidas.append(round(elemnto))
 
         if set(salidaDeseada) == set(evalSalidas):
-            messagebox.showerror('Informacion', 'Patron Aprendido')
+            messagebox.showinfo('Informacion', 'Patron Aprendido')
             plt.title(u'salida deseada V/S salida obtenida')
             plt.xlabel('Numero de salidas')
             plt.ylabel(u'Salidas')
@@ -504,6 +525,7 @@ def simular():
             x3 = evalSalidas
             plt.plot(x2, 'rd', x3, 'g^')
             plt.show()
+            print(evalSalidas)
         else:
             messagebox.showerror('Informacion', 'La red no conoce este patron')
             plt.title(u'salida deseada V/S salida obtenida')
